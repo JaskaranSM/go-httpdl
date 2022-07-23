@@ -85,6 +85,9 @@ func (h *HTTPDownload) IsFailed() bool {
 }
 
 func (h *HTTPDownload) GetFailureError() error {
+	if h.isCancelled {
+		return h.parts[0].Err
+	}
 	part := h.getFailedPart()
 	if part == nil {
 		return nil
