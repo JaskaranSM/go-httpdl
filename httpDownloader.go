@@ -11,6 +11,12 @@ import (
 	"time"
 )
 
+func NewHTTPDownloader(client *http.Client) *HTTPDownloader {
+	return &HTTPDownloader{
+		client: client,
+	}
+}
+
 type HTTPDownloader struct {
 	listeners []HTTPDownloadListener
 	downloads []*HTTPDownload
