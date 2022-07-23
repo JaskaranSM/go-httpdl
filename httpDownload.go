@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,7 @@ type HTTPDownload struct {
 	speed       int64
 	chunksize   int64
 	name        string
+	mut         sync.Mutex
 }
 
 func (h *HTTPDownload) Init() {
@@ -147,6 +149,8 @@ func (h *HTTPDownload) StartDownload() {
 }
 
 func (h *HTTPDownload) CancelDownload() {
+	h.mut.Lock()
+	defer h.mut.Unlock()
 	h.isCancelled = true
 	for i := 0; i < h.connections; i++ {
 		h.parts[i].Err = fmt.Errorf("Cancelled by user.")
