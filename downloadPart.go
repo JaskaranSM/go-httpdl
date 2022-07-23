@@ -3,7 +3,6 @@ package httpdl
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 )
@@ -69,7 +68,6 @@ func (d *DownloadPart) Download() error {
 		return err
 	}
 	rangeHeader := fmt.Sprintf("bytes=%d-%d", d.offset, int64(d.offset)+d.total-1)
-	log.Println(rangeHeader)
 	req.Header.Set("Range", rangeHeader)
 	resp, err := d.client.Do(req)
 	if err != nil {
