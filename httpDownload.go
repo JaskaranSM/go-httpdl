@@ -25,7 +25,7 @@ type HTTPDownload struct {
 }
 
 func (h *HTTPDownload) Init() {
-	if h.size == 4096*1024 {
+	if h.size == h.chunksize*1024 {
 		h.connections = 1
 	}
 	sizePerPart := h.size / int64(h.connections)
