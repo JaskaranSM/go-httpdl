@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 )
 
 type DownloadPart struct {
@@ -20,6 +21,7 @@ type DownloadPart struct {
 	chunksize   int64
 	file        *os.File
 	client      *http.Client
+	mut         sync.Mutex
 }
 
 func (d *DownloadPart) CompletedLength() int64 {
@@ -40,12 +42,16 @@ func (d *DownloadPart) HandleResponse(resp *http.Response) error {
 
 		nbytes, err := resp.Body.Read(buffer[0:d.chunksize])
 		if err != nil && err != io.EOF {
+			d.mut.Lock()
+			defer d.mut.Unlock()
 			d.Err = err
 			d.isFailed = true
 			return err
 		}
 		nbytes, err = d.file.WriteAt(buffer[0:nbytes], int64(d.offset)+d.completed)
 		if err != nil {
+			d.mut.Lock()
+			defer d.mut.Unlock()
 			d.Err = err
 			d.isFailed = true
 			return nil
@@ -71,6 +77,8 @@ func (d *DownloadPart) Download() error {
 	req.Header.Set("Range", rangeHeader)
 	resp, err := d.client.Do(req)
 	if err != nil {
+		d.mut.Lock()
+		defer d.mut.Unlock()
 		d.Err = err
 		d.isFailed = true
 		return err
