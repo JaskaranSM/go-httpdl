@@ -149,7 +149,7 @@ func (h *HTTPDownload) StartDownload() {
 func (h *HTTPDownload) CancelDownload() {
 	h.isCancelled = true
 	for i := 0; i < h.connections; i++ {
-		h.parts[i].isCancelled = true
 		h.parts[i].Err = fmt.Errorf("Cancelled by user.")
+		h.parts[i].isCancelled = true
 	}
 }

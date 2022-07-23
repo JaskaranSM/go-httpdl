@@ -40,14 +40,14 @@ func (d *DownloadPart) HandleResponse(resp *http.Response) error {
 
 		nbytes, err := resp.Body.Read(buffer[0:d.chunksize])
 		if err != nil && err != io.EOF {
-			d.isFailed = true
 			d.Err = err
+			d.isFailed = true
 			return err
 		}
 		nbytes, err = d.file.WriteAt(buffer[0:nbytes], int64(d.offset)+d.completed)
 		if err != nil {
-			d.isFailed = true
 			d.Err = err
+			d.isFailed = true
 			return nil
 		}
 		d.completed += int64(nbytes)
