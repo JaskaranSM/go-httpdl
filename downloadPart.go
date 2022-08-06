@@ -32,6 +32,30 @@ func (d *DownloadPart) TotalLength() int64 {
 	return d.total
 }
 
+func (d *DownloadPart) Write(p []byte) (int, error) {
+	if d.isCancelled {
+		return 0, fmt.Errorf("Cancelled by user.")
+	}
+	d.completed += int64(len(p))
+	return d.file.Write(p)
+}
+
+func (d *DownloadPart) HandleResponseWriter(resp *http.Response) error {
+	_, err := io.Copy(d, resp.Body)
+	if err != nil && err != io.EOF {
+		d.mut.Lock()
+		defer d.mut.Unlock()
+		d.Err = err
+		d.isFailed = true
+		return err
+	}
+	if d.total == 0 {
+		d.total = d.completed
+	}
+	d.isCompleted = true
+	return nil
+}
+
 func (d *DownloadPart) HandleResponse(resp *http.Response) error {
 	buffer := make([]byte, d.chunksize)
 
@@ -39,7 +63,6 @@ func (d *DownloadPart) HandleResponse(resp *http.Response) error {
 		if d.isCancelled || d.isFailed || d.isCompleted {
 			return nil
 		}
-
 		nbytes, err := resp.Body.Read(buffer[0:d.chunksize])
 		if err != nil && err != io.EOF {
 			d.mut.Lock()
@@ -84,5 +107,8 @@ func (d *DownloadPart) Download() error {
 		return err
 	}
 	defer resp.Body.Close()
+	if d.total == 0 {
+		return d.HandleResponseWriter(resp)
+	}
 	return d.HandleResponse(resp)
 }

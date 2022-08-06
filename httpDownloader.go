@@ -82,7 +82,7 @@ func (h *HTTPDownloader) AddDownload(url string, opts *AddDownloadOpts) (*HTTPDo
 	if err != nil {
 		return nil, err
 	}
-	if !props.SupportsMultiConnection {
+	if !props.SupportsMultiConnection || props.Size == 0 {
 		opts.Connections = 1
 	}
 	if opts.Chunksize <= 0 {

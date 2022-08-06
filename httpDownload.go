@@ -130,7 +130,11 @@ func (h *HTTPDownload) Speed() int64 {
 }
 
 func (h *HTTPDownload) TotalLength() int64 {
-	return h.size
+	var total int64
+	for i := 0; i < h.connections; i++ {
+		total += h.parts[i].TotalLength()
+	}
+	return total
 }
 
 func (h *HTTPDownload) Gid() string {
