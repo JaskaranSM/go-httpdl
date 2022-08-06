@@ -24,7 +24,7 @@ type HTTPDownloader struct {
 }
 
 func (h *HTTPDownloader) GetURLProperties(url string) (*URLProperties, error) {
-	req, err := http.NewRequest("HEAD", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -32,6 +32,7 @@ func (h *HTTPDownloader) GetURLProperties(url string) (*URLProperties, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	sizeInt64, _ := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
 	props := &URLProperties{}
 	props.SupportsMultiConnection = h.HeaderSupportsByteRange(resp.Header)

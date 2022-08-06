@@ -51,13 +51,6 @@ func (h *HTTPDownload) Init() {
 }
 
 func (h *HTTPDownload) IsCompleted() bool {
-	if h.IsCancelled() {
-		return true
-	}
-	if h.IsFailed() {
-		return true
-	}
-
 	for _, part := range h.parts {
 		if !part.isCompleted {
 			return false
@@ -68,20 +61,20 @@ func (h *HTTPDownload) IsCompleted() bool {
 
 func (h *HTTPDownload) IsCancelled() bool {
 	for _, part := range h.parts {
-		if !part.isCancelled {
-			return false
+		if part.isCancelled {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (h *HTTPDownload) IsFailed() bool {
 	for _, part := range h.parts {
-		if !part.isFailed {
-			return false
+		if part.isFailed {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (h *HTTPDownload) GetFailureError() error {
@@ -111,7 +104,7 @@ func (h *HTTPDownload) GetFileHandle() *os.File {
 func (h *HTTPDownload) SpeedObserver() {
 	var last int64
 	for range time.Tick(1 * time.Second) {
-		if h.isCancelled || h.IsCompleted() {
+		if h.isCancelled || h.IsCompleted() || h.IsFailed() {
 			return
 		}
 		new := h.CompletedLength()
