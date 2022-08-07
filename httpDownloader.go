@@ -88,6 +88,12 @@ func (h *HTTPDownloader) AddDownload(url string, opts *AddDownloadOpts) (*HTTPDo
 	if opts.Chunksize <= 0 {
 		opts.Chunksize = 4096
 	}
+	if opts.Filename != "" {
+		props.Filename = opts.Filename
+	}
+	if opts.Size > 0 {
+		props.Size = opts.Size
+	}
 	pth := path.Join(opts.Dir, props.Filename)
 	if _, err := os.Stat(pth); err == nil {
 		os.Remove(pth)
