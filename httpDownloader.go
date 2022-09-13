@@ -134,11 +134,12 @@ func (h *HTTPDownloader) HeaderSupportsByteRange(header http.Header) bool {
 
 func (h *HTTPDownloader) SniffFilename(url string, header http.Header) string {
 	var filename string
+	var parsedUrl string
 	var err error
 	_, params, _ := mime.ParseMediaType(header.Get("Content-Disposition"))
 	filename = params["filename"]
 	if filename == "" {
-		parsedUrl, err := u.Parse(url)
+		parsedUrl, err = u.Parse(url)
 		if err == nil {
 			url = parsedUrl.Path
 		}
