@@ -138,6 +138,10 @@ func (h *HTTPDownloader) SniffFilename(url string, header http.Header) string {
 	_, params, _ := mime.ParseMediaType(header.Get("Content-Disposition"))
 	filename = params["filename"]
 	if filename == "" {
+		parsedUrl, err := u.Parse(url)
+		if err == nil {
+			url = parsedUrl.Path
+		}
 		d := strings.Split(url, "/")
 		filename, err = u.QueryUnescape(d[len(d)-1])
 		if err != nil {
