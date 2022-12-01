@@ -106,6 +106,13 @@ func (d *DownloadPart) Download() error {
 		d.isFailed = true
 		return err
 	}
+	if resp.StatusCode >= 400 {
+		d.mut.Lock()
+		defer d.mut.Unlock()
+		d.Err = ResponseCodeNotSuccessFullError(resp.StatusCode)
+		d.isFailed = true
+		return err
+	}
 	defer resp.Body.Close()
 	if d.total == 0 {
 		return d.HandleResponseWriter(resp)

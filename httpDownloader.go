@@ -32,6 +32,9 @@ func (h *HTTPDownloader) GetURLProperties(url string) (*URLProperties, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode >= 400 {
+		return nil, ResponseCodeNotSuccessFullError(resp.StatusCode)
+	}
 	defer resp.Body.Close()
 	sizeInt64, _ := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
 	props := &URLProperties{}
