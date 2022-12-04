@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/detailyang/go-fallocate"
 )
 
 func NewHTTPDownloader(client *http.Client) *HTTPDownloader {
@@ -61,14 +63,17 @@ func (h *HTTPDownloader) NotifyListeners(event DownloadEvent, download *HTTPDown
 func (h *HTTPDownloader) ListenForEvents(download *HTTPDownload) {
 	for {
 		if download.IsCompleted() {
+			download.file.Close()
 			h.NotifyListeners(OnDownloadCompleteEvent, download)
 			break
 		}
 		if download.IsCancelled() {
+			download.file.Close()
 			h.NotifyListeners(OnDownloadStopEvent, download)
 			break
 		}
 		if download.IsFailed() {
+			download.file.Close()
 			h.NotifyListeners(OnDownloadStopEvent, download)
 			break
 		}
@@ -105,6 +110,12 @@ func (h *HTTPDownloader) AddDownload(url string, opts *AddDownloadOpts) (*HTTPDo
 	file, err := os.OpenFile(pth, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return nil, err
+	}
+	if opts.Fallocate {
+		err = fallocate.Fallocate(file, 0, props.Size)
+		if err != nil {
+			return nil, err
+		}
 	}
 	download := &HTTPDownload{
 		gid:         RandString(16),
